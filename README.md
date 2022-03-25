@@ -1,6 +1,6 @@
 # Modelos de series de tiempo aplicada a indicadores de género.
  
- > Material elaborado por [Rocío Piña](https://github.com/rociolopezpi29).  <br /> 
+ > Material elaborado por [Rocío Piña](https://github.com/rociolopezpi29).  \
 
 
 

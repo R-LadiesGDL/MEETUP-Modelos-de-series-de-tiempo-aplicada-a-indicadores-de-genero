@@ -5,9 +5,9 @@
 
 El material que se encuentra en este repositorio es para el taller que del día 26 de marzo de 2022 para [R-Ladies Guadalajara](https://twitter.com/RLadiesGDL), incluye dos archivos de tipo csv y un Rmd:
 
-1. datos_desocupacion.csv
-2. data_trabajo_no_remunerado.csv
-3. Analisis_de_series_de_tiempo.Rmd
+- [ ] datos_desocupacion.csv
+- [ ] data_trabajo_no_remunerado.csv
+- [ ] Analisis_de_series_de_tiempo.Rmd
 
 
 Para correr el código es necesario instalar y cargar las siguientes paqueterías:

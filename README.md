@@ -1,9 +1,10 @@
 # Modelos de series de tiempo aplicada a indicadores de género.
  
  *Material elaborado por [Rocío Piña](https://github.com/rociolopezpi29).*
-##
-##
-##
+
+
+
+
 El material que se encuentra en este repositorio es para el taller que del día 26 de marzo de 2022 para [R-Ladies Guadalajara](https://twitter.com/RLadiesGDL), incluye dos archivos de tipo csv y un Rmd:
 
 1. datos_desocupacion.csv

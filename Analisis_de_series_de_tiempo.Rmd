@@ -1,0 +1,162 @@
+---
+title: "Modelos_de_series_de_tiempo_ig"
+author: "María del Rocío López Piña"
+date: "26 de marzo de 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	include = TRUE
+)
+```
+
+** Modelos de series de tiempo aplicados a indicadores de género **
+
+Realizaremos un ejemplo práctico del análisis de series de tiempo utiizando la información sobre la Tasa de desocupación nacional trimestral publicada por el Instituto Nacional de Estadística y Geografía (INEGI) y los datos sobre el Tiempo de trabajo no remunerado según ingresos propios por sexo, publicado por el Observatorio de Igualdad de Género de América Latina y el Caribe. Estas cifras forman parte de los indicadores de genéro sobre autonomía económica. 
+
+## Carga de paquetes
+Realizamos la carga de los paquetes necesarios para el analisis, comenzando con los paquetes básicos para la manipulación y visualización de bases de datos. Las librerías que utilizaremos especificamente para el análisis de series de tiempo son "tseries" y "forecast".
+```{r}
+library(dplyr)
+library(tidyverse)
+library(tseries)     
+library(forecast)
+library(ggfortify)
+library(ggplot2)
+```
+
+## Lectura de datos
+```{r, echo=FALSE}
+#Indicador: Tasa de ocupación parcial y desocupación nacional trimestral
+df<-read.csv("datos_desocupación.csv", header = TRUE, sep = ",")
+df<-as.data.frame(df)
+head(df)
+
+
+#Indicador: Tiempo de trabajo no remunerado
+df_t<-read.csv("data_trabajo_no_remunerado.csv", header = TRUE, sep = ",")
+df_t<-as.data.frame(df_t)
+head(df_t)
+```
+
+##Limpieza de datos
+```{r}
+#Indicador: Tasa de ocupación parcial y desocupación nacional trimestral
+df$Sexo <- recode(df$Sexo, Hombre=0, Mujer=1)
+df$tasa_desocupacion <- round(df$tasa_desocupacion,3)
+
+#Indicador: Tiempo de trabajo no remunerado
+df_t$Sexo <- recode(df_t$Sexo, Hombre=0, Mujer=1)
+df_t$value <- round(df_t$value,3)
+```
+
+**Análisis de series de tiempo **
+
+##Crear un objeto de tipo ts y graficarlo
+Con el objetivo de utilizar las funciones para el análisis de series temporales requerimos de que los datos correspondientes a cada indicador sean de la clase ts. Para ello utilizaremos la función ts() que convierte un vector o matriz de observaciones en una serie de tiempo.
+
+**Ejemplo I: Tiempo de trabajo no remunerado **
+```{r}
+#Indicador: Tiempo de trabajo no remunerado
+df_Mt = filter(df_t, Sexo == 1) #Creamos una serie de tiempo para mujeres
+serie_mujerest<- ts(df_Mt$value, start = c(2009,1), end = c(2019,4), frequency = 1)
+print(serie_mujerest)
+
+#Graficamos la serie de tiempo
+ggplot2::autoplot(serie_mujerest, ts.colour = "red", ts.linetype = "dashed") + ggtitle("Tiempo de trabajo no remunerado mujeres") + xlab("Años") + ylab("Horas") + theme(plot.title = element_text(hjust = 0.5))
+
+df_Ht = filter(df_t, Sexo == 0) #Creamos una serie de tiempo para hombres
+serie_hombrest<- ts(df_Ht$value, start = c(2009,1), end = c(2019,4), frequency = 1)
+print(serie_hombrest)
+
+#Graficamos la serie de tiempo
+ggplot2::autoplot(serie_hombrest, ts.colour = "blue", ts.linetype = "dashed") + ggtitle("Tiempo de trabajo no remunerado hombres") + xlab("Años") + ylab("Horas") + theme(plot.title = element_text(hjust = 0.5))
+
+#Graficamos ambas series en conjunto
+serie_myht <- cbind(serie_mujerest, serie_hombrest)
+ggplot2::autoplot(serie_myht, facets=TRUE) + ggtitle("Tiempo de trabajo no remunerado mujeres & hombres") + theme(plot.title = element_text(hjust = 0.5))
+ggplot2::autoplot(serie_myht) + ggtitle("Tiempo de trabajo no remunerado mujeres vs. hombres") + theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+** Ejemplo II: Tasa de desocupación nacional trimestral **
+```{r}
+#Indicador: Tasa de desocupación nacional trimestral
+df_M = filter(df, Sexo == 1) #Creamos una serie de tiempo para mujeres
+serie_mujeres <- ts(df_M$tasa_desocupacion, start = c(2018,1), end = c(2021,4), frequency = 4)
+print(serie_mujeres)
+
+#Graficamos la serie de tiempo
+ggplot2::autoplot(serie_mujeres, ts.colour = "red", ts.linetype = "dashed") + ggtitle("Tasa de desocupación nacional trimestral mujeres") + xlab("Años") + ylab("Porcentaje respecto a la PEA") + theme(plot.title = element_text(hjust = 0.5))
+
+df_H = filter(df, Sexo == 0) #Creamos una serie de tiempo para hombres
+serie_hombres <- ts(df_H$tasa_desocupacion, start = c(2018,1), end = c(2021,4), frequency = 4)
+print(serie_hombres)
+
+#Graficamos la serie de tiempo
+ggplot2::autoplot(serie_hombres, ts.colour = "brown", ts.linetype = "dashed") + ggtitle("Tasa de desocupación nacional trimestral hombres") + xlab("Años") + ylab("Porcentaje respecto a la PEA") + theme(plot.title = element_text(hjust = 0.5))
+
+#Graficamos ambas series en conjunto
+serie_myh <- cbind(serie_mujeres, serie_hombres)
+ggplot2::autoplot(serie_myh, facets=TRUE) + ggtitle("Tasa de desocupación nacional trimestral mujeres & hombres") + theme(plot.title = element_text(hjust = 0.5))
+ggplot2::autoplot(serie_myh) + ggtitle("Tasa de desocupación nacional trimestral mujeres vs. hombres") + theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+##Componentes de una serie de tiempo
+##Tendencia
+```{r}
+#Detectar tendencia
+boxplot(serie_mujeres~cycle(serie_mujeres))
+
+
+tendencia_sm = ma(serie_mujeres, order = 4, centre = T)
+plot(serie_mujeres)
+lines(tendencia_sm)
+plot(tendencia_sm)
+
+#Remover tendencia
+serie_st_m = serie_mujeres - tendencia_sm
+plot(as.ts(serie_st_m))
+
+
+```
+##Estacionalidad
+```{r}
+
+m_serie = t(matrix(data = serie_st_m, nrow = 4))
+serie_estacionalizada_m = colMeans(m_serie, na.rm = T)
+plot(as.ts(rep(serie_estacionalizada_m,4)))
+```
+##Componente Aleatorio
+```{r}
+componente_aleatorio = serie_mujeres - tendencia_sm - serie_estacionalizada_m
+plot(as.ts(componente_aleatorio))
+```
+
+##Descomposición de una serie de tiempo utilizando funciones
+# Ejemplo: Tasa de desocupación nacional trimestral 
+En este apartado veremos dos funciones para la descomposición de la serie de tiempo "decompose()" y "stl()", así como distintas formas de visualizar los componentes.
+```{r}
+#Caso I: Mujeres
+comp_serie_m<-decompose(serie_mujeres,"additive")
+plot(comp_serie_m)
+
+#Graficamos cada componente
+ggplot2::autoplot(stl(serie_mujeres, "periodic"), ts.colour = "blue")
+p1 = stl(serie_mujeres,"periodic")
+plot(p1)
+
+#Caso I: Hombres
+comp_serie_h<-decompose(serie_hombres,"additive")
+plot(comp_serie_h)
+
+#Graficamos cada componente
+ggplot2::autoplot(stl(serie_hombres, "periodic"), ts.colour = "blue")
+p1h = stl(serie_hombres,"periodic")
+plot(p1h)
+```
+
